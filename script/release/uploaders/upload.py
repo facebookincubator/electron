@@ -124,11 +124,11 @@ def main():
       OUT_DIR, 'hunspell_dictionaries.zip')
     upload_electron(release, hunspell_dictionaries_zip, args)
 
-  if not tag_exists and not args.upload_to_s3:
-    # Upload symbols to symbol server.
-    run_python_upload_script('upload-symbols.py')
-    if PLATFORM == 'win32':
-      run_python_upload_script('upload-node-headers.py', '-v', args.version)
+  # if not tag_exists and not args.upload_to_s3:
+  #   # Upload symbols to symbol server.
+  #   run_python_upload_script('upload-symbols.py')
+  #   if PLATFORM == 'win32':
+  #     run_python_upload_script('upload-node-headers.py', '-v', args.version)
 
   if PLATFORM == 'win32':
     toolchain_profile_zip = os.path.join(OUT_DIR, TOOLCHAIN_PROFILE_NAME)
@@ -331,8 +331,9 @@ def upload_electron(release, file_path, args):
   # Upload the file.
   upload_io_to_github(release, filename, file_path, args.version)
 
-  # Upload the checksum file.
-  upload_sha256_checksum(args.version, file_path)
+  if args.upload_to_s3:
+    # Upload the checksum file.
+    upload_sha256_checksum(args.version, file_path)
 
 
 def upload_io_to_github(release, filename, filepath, version):

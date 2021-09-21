@@ -34,7 +34,7 @@ const octokit = new Octokit({
   auth: process.env.ELECTRON_GITHUB_TOKEN
 });
 
-const targetRepo = pkgVersion.indexOf('nightly') > 0 ? 'nightlies' : 'electron';
+const targetRepo = 'electron';
 let failureCount = 0;
 
 async function getDraftRelease (version, skipValidation) {
@@ -280,7 +280,7 @@ async function createReleaseShasums (release) {
 }
 
 async function uploadShasumFile (filePath, fileName, releaseId) {
-  const uploadUrl = `https://uploads.github.com/repos/electron/${targetRepo}/releases/${releaseId}/assets{?name,label}`;
+  const uploadUrl = `https://uploads.github.com/repos/facebookincubator/${targetRepo}/releases/${releaseId}/assets{?name,label}`;
   return octokit.repos.uploadReleaseAsset({
     url: uploadUrl,
     headers: {
