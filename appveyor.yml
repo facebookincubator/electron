@@ -38,6 +38,10 @@ environment:
   GOMA_FALLBACK_ON_AUTH_FAILURE: true
 build_script:
   - ps: >-
+      Invoke-WebRequest https://storage.googleapis.com/chrome-infra/depot_tools.zip -OutFile C:/depot_tools.zip
+  - 7z x C:/depot_tools.zip -oC:/depot_tools
+  - set PATH=%PATH%;C:/depot_tools
+  - ps: >-
       if(($env:APPVEYOR_PULL_REQUEST_HEAD_REPO_NAME -split "/")[0] -eq ($env:APPVEYOR_REPO_NAME -split "/")[0]) {
         Write-warning "Skipping PR build for branch"; Exit-AppveyorBuild
       } else {
