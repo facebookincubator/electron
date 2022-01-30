@@ -98,12 +98,12 @@ machine-mac: &machine-mac
     xcode: "12.4.0"
 
 machine-mac-large: &machine-mac-large
-  resource_class: large
+  resource_class: macos.x86.medium.gen2
   macos:
     xcode: "12.4.0"
 
 machine-mac-large-arm: &machine-mac-large-arm
-  resource_class: large
+  resource_class: macos.x86.medium.gen2	
   macos:
     xcode: "12.4.0"
 
