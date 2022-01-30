@@ -201,7 +201,7 @@ env-mac-large: &env-mac-large
 
 env-mac-large-release: &env-mac-large-release
   <<: *env-global
-  NUMBER_OF_NINJA_PROCESSES: 18
+  NUMBER_OF_NINJA_PROCESSES: 8
 
 env-ninja-status: &env-ninja-status
   NINJA_STATUS: "[%r processes, %f/%t @ %o/s : %es] "
