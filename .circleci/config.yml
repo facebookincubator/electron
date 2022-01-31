@@ -105,7 +105,7 @@ machine-mac-large: &machine-mac-large
 machine-mac-large-arm: &machine-mac-large-arm
   resource_class: macos.x86.medium.gen2	
   macos:
-    xcode: "10.3"
+    xcode: "11.7.0"
 
 machine-mac-arm64: &machine-mac-arm64
   resource_class: electronjs/macos-arm64
