@@ -546,7 +546,9 @@ step-electron-build: &step-electron-build
 
       # Lets generate a snapshot and mksnapshot and then delete all the x-compiled generated files to save space
       if [ "$USE_PREBUILT_V8_CONTEXT_SNAPSHOT" == "1" ]; then
+        echo "Building "electron:electron_mksnapshot_zip"
         ninja -C out/Default electron:electron_mksnapshot_zip -j $NUMBER_OF_NINJA_PROCESSES
+        echo "Building "tools/v8_context_snapshot"
         ninja -C out/Default tools/v8_context_snapshot -j $NUMBER_OF_NINJA_PROCESSES
         gn desc out/Default v8:run_mksnapshot_default args > out/Default/mksnapshot_args
         (cd out/Default; zip mksnapshot.zip mksnapshot_args clang_x64_v8_arm64/gen/v8/embedded.S)
@@ -557,6 +559,7 @@ step-electron-build: &step-electron-build
         # Regenerate because we just deleted some ninja files 
         gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
       fi
+      echo "Building electron"
       ninja -C out/Default electron -j $NUMBER_OF_NINJA_PROCESSES
       node electron/script/check-symlinks.js
 
