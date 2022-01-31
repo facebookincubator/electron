@@ -557,7 +557,17 @@ step-electron-build: &step-electron-build
         # Regenerate because we just deleted some ninja files 
         gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
       fi
-      
+
+
+      echo "Invoking stripped_mantle_framework"
+      ninja -C out/Default electron:stripped_mantle_framework -j $NUMBER_OF_NINJA_PROCESSES
+
+      echo "Invoking stripped_reactiveobjc_framework"
+      ninja -C out/Default electron:stripped_reactiveobjc_framework -j $NUMBER_OF_NINJA_PROCESSES
+
+      echo "Invoking stripped_squirrel_framework"
+      ninja -C out/Default electron:stripped_squirrel_framework -j $NUMBER_OF_NINJA_PROCESSES
+
       echo "Invoking electron_app_framework_bundle_data"
       ninja -C out/Default electron:electron_app_framework_bundle_data -j $NUMBER_OF_NINJA_PROCESSES
       echo "Invoking electron_app_resources"
