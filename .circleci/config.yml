@@ -95,17 +95,17 @@ machine-linux-2xlarge: &machine-linux-2xlarge
 
 machine-mac: &machine-mac
   macos:
-    xcode: "12.4.0"
+    xcode: "10.3"
 
 machine-mac-large: &machine-mac-large
-  resource_class: large
+  resource_class: macos.x86.medium.gen2	
   macos:
-    xcode: "12.4.0"
+    xcode: "10.3"
 
 machine-mac-large-arm: &machine-mac-large-arm
-  resource_class: large
+  resource_class: macos.x86.medium.gen2	
   macos:
-    xcode: "12.4.0"
+    xcode: "10.3"
 
 machine-mac-arm64: &machine-mac-arm64
   resource_class: electronjs/macos-arm64
@@ -201,7 +201,7 @@ env-mac-large: &env-mac-large
 
 env-mac-large-release: &env-mac-large-release
   <<: *env-global
-  NUMBER_OF_NINJA_PROCESSES: 8
+  NUMBER_OF_NINJA_PROCESSES: 4
 
 env-ninja-status: &env-ninja-status
   NINJA_STATUS: "[%r processes, %f/%t @ %o/s : %es] "
