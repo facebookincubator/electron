@@ -531,6 +531,7 @@ step-electron-build-prep: &step-electron-build-prep
     name: Electron build prep
     no_output_timeout: 30m
     command: |
+      cd src
       echo "Invoking skia"
       ninja -C third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES
 
