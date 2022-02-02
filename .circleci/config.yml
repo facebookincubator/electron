@@ -533,7 +533,7 @@ step-electron-build-prep: &step-electron-build-prep
     command: |
       cd src
       echo "Invoking skia"
-      ninja -C third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES
+      ninja -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES
 
 step-electron-build: &step-electron-build
   run:
