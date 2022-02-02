@@ -1017,6 +1017,14 @@ step-restore-out-cache: &step-restore-out-cache
       - v9-out-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
     name: Restoring out cache
 
+step-restore-out-obj-cache: &step-restore-out-obj-cache
+  restore_cache:
+    paths:
+      - ./src/out/Default/obj
+    keys:
+      - v9-out-obj-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
+    name: Restoring out cache
+
 step-set-git-cache-path: &step-set-git-cache-path
   run:
     name: Set GIT_CACHE_PATH to make gclient to use the cache
@@ -1033,6 +1041,15 @@ step-save-git-cache: &step-save-git-cache
       - ~/.gclient-cache
     key: v2-gclient-cache-{{ checksum "src/electron/.circle-sync-done" }}-{{ checksum "src/electron/DEPS" }}
     name: Persisting git cache
+
+
+step-save-out-obj-cache: &step-restore-out-obj-cache
+  save_cache:
+    paths:
+      - ./src/out/Default/obj
+    keys:
+      - v9-out-obj-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
+    name: Saving out/obj cache
 
 step-save-out-cache: &step-save-out-cache
   save_cache:
@@ -1687,9 +1704,9 @@ commands:
       - *step-gn-gen-default
 
       # Precompile workaround
-      - *step-restore-out-cache
+      - *step-restore-out-obj-cache
       - *step-electron-build-prep
-      - *step-save-out-cache
+      - *step-save-out-obj-cache
 
       # Electron app
       - *step-electron-build
