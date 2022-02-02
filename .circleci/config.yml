@@ -536,7 +536,7 @@ step-electron-build-prep: &step-electron-build-prep
 
 step-electron-build: &step-electron-build
   run:
-    name: Electron build
+    name: Electron build main
     no_output_timeout: 30m
     command: |
       # On arm platforms we generate a cross-arch ffmpeg that ninja does not seem
@@ -1587,7 +1587,6 @@ commands:
                 steps:
                   - *step-restore-out-cache
             - *step-gn-gen-default
-            - *step-electron-build-prep
             - when:
                 condition: << parameters.use-out-cache >>
                 steps:
@@ -1699,6 +1698,11 @@ commands:
       - *step-setup-env-for-build
       - *step-setup-goma-for-build
       - *step-gn-gen-default
+
+      # Precompile workaround
+      - *step-restore-out-cache
+      - *step-electron-build-prep
+      - *step-save-out-cache
 
       # Electron app
       - *step-electron-build
