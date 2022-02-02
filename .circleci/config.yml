@@ -1046,7 +1046,7 @@ step-save-out-obj-cache: &step-save-out-obj-cache
   save_cache:
     paths:
       - ./src/out/Default/obj
-    keys:
+    key:
       - v9-out-obj-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
     name: Saving out/obj cache
 
