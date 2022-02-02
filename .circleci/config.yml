@@ -571,20 +571,6 @@ step-electron-build: &step-electron-build
       echo "Invoking Blink"
       ninja -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES
 
-      echo "Invoking v8"
-      ninja -C out/Default v8 -j $NUMBER_OF_NINJA_PROCESSES
-
-      echo "Invoking skia"
-      ninja -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES
-
-
-      echo "Invoking electron_app_framework_bundle_data"
-      ninja -C out/Default electron:electron_app_framework_bundle_data -j $NUMBER_OF_NINJA_PROCESSES
-      echo "Invoking electron_app_resources"
-      ninja -C out/Default electron:electron_app_resources -j $NUMBER_OF_NINJA_PROCESSES
-      echo "Invoking electron_fuses"
-      ninja -C out/Default electron:electron_fuses -j $NUMBER_OF_NINJA_PROCESSES
-
       echo "Building electron..."
       ninja -C out/Default electron -j $NUMBER_OF_NINJA_PROCESSES
       echo "Electron have been built!"
