@@ -511,7 +511,12 @@ step-gn-gen-default: &step-gn-gen-default
     name: Default GN gen
     command: |
       cd src
-      gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+      if [ ! -d "out/Default"]; then
+        echo "out/Default doesn't exist!"
+        gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+      else
+        echo "out/Default exists. Nothing to do"
+      fi
 
 step-gn-check: &step-gn-check
   run:
@@ -524,6 +529,15 @@ step-gn-check: &step-gn-check
       # Check the hunspell filenames
       node electron/script/gen-hunspell-filenames.js --check
       node electron/script/gen-libc++-filenames.js --check
+
+step-electron-build-prep: &step-electron-build-prep
+  run:
+    name: Electron build prep
+    no_output_timeout: 30m
+    command: |
+      cd src
+      echo "Invoking Blink"
+      ninja -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES  
 
 step-electron-build: &step-electron-build
   run:
@@ -1001,6 +1015,15 @@ step-restore-out-cache: &step-restore-out-cache
       - v9-out-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
     name: Restoring out cache
 
+step-restore-out-cache-publish: &step-restore-out-cache-publish
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .BuildNum }}
+      - v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision  }}
+    name: Restoring out cache
+
 step-set-git-cache-path: &step-set-git-cache-path
   run:
     name: Set GIT_CACHE_PATH to make gclient to use the cache
@@ -1024,6 +1047,14 @@ step-save-out-cache: &step-save-out-cache
       - ./src/out/Default
     key: v9-out-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
     name: Persisting out cache
+
+step-save-out-cache-publish: &step-save-out-cache-publish
+  save_cache:
+    paths:
+      - ./src/out/Default
+    key: v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .BuildNum }}
+    key: v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision }}
+    name: Persisting out cache for publish
 
 step-run-electron-only-hooks: &step-run-electron-only-hooks
   run:
@@ -1664,7 +1695,13 @@ commands:
       - *step-fix-sync-on-mac
       - *step-setup-env-for-build
       - *step-setup-goma-for-build
+
+      # Electron build prep
+      - *step-restore-out-cache-publish
       - *step-gn-gen-default
+      - *step-electron-build-prep
+      - *step-save-out-cache
+      - *step-save-out-cache-publish
 
       # Electron app
       - *step-electron-build
