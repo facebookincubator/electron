@@ -1007,7 +1007,15 @@ step-restore-out-cache: &step-restore-out-cache
     paths:
       - ./src/out/Default
     keys:
-      - v9-out-cache-2-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
+      - v9-out-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
+    name: Restoring out cache
+
+step-restore-out-cache-publish: &step-restore-out-cache-publish
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .BuildNum }}
     name: Restoring out cache
 
 step-set-git-cache-path: &step-set-git-cache-path
@@ -1031,8 +1039,15 @@ step-save-out-cache: &step-save-out-cache
   save_cache:
     paths:
       - ./src/out/Default
-    key: v9-out-cache-2-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
+    key: v9-out-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
     name: Persisting out cache
+
+step-save-out-cache-publish: &step-save-out-cache-publish
+  save_cache:
+    paths:
+      - ./src/out/Default
+    key: v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .BuildNum }}
+    name: Persisting out cache for publish
 
 step-run-electron-only-hooks: &step-run-electron-only-hooks
   run:
@@ -1676,9 +1691,9 @@ commands:
       - *step-gn-gen-default
 
       # Electron build prep
-      - *step-restore-out-cache
+      - *step-restore-out-cache-publish
       - *step-electron-build-prep
-      - *step-save-out-cache
+      - *step-save-out-cache-publish
 
       # Electron app
       - *step-electron-build
