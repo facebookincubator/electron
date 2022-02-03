@@ -512,9 +512,10 @@ step-gn-gen-default: &step-gn-gen-default
     command: |
       cd src
       echo "Current timestamp is `date +%s`"
-      echo "Stamp stat for out/Default/obj/third_party/devtools-frontend/src/inspector_overlay/build_inspector_overlay.stamp"
       set +e
+      echo "Stamp stat for out/Default/obj/third_party/devtools-frontend/src/inspector_overlay/build_inspector_overlay.stamp"
       stat --format='%X %Y %Z' out/Default/obj/third_party/devtools-frontend/src/inspector_overlay/build_inspector_overlay.stamp 
+      # gen/third_party/devtools-frontend/src/inspector_overlay/inspector_overlay-tsconfig.json.tsbuildinfo
       set -e
 
       if [ ! -d "out/Default/obj" ]; then
@@ -1703,7 +1704,7 @@ commands:
             - *step-minimize-workspace-size-from-checkout
       - *step-fix-sync-on-mac
       - *step-setup-env-for-build
-      - *step-setup-goma-for-build
+      # - *step-setup-goma-for-build
 
       # Electron build prep
       - *step-restore-out-cache-publish
