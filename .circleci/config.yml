@@ -525,6 +525,15 @@ step-gn-check: &step-gn-check
       node electron/script/gen-hunspell-filenames.js --check
       node electron/script/gen-libc++-filenames.js --check
 
+step-electron-build-prep: &step-electron-build-prep
+  run:
+    name: Electron build prep
+    no_output_timeout: 30m
+    command: |
+      cd src
+      echo "Invoking Blink"
+      ninja -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES  
+
 step-electron-build: &step-electron-build
   run:
     name: Electron build
@@ -1665,6 +1674,11 @@ commands:
       - *step-setup-env-for-build
       - *step-setup-goma-for-build
       - *step-gn-gen-default
+
+      # Electron build prep
+      - *step-restore-out-cache
+      - *step-electron-build-prep
+      - *step-save-out-cache
 
       # Electron app
       - *step-electron-build
