@@ -513,7 +513,9 @@ step-gn-gen-default: &step-gn-gen-default
       cd src
       echo "Current timestamp is `date +%s`"
       echo "Stamp stat: "
+      set +e
       stat out/Default/obj/third_party/devtools-frontend/src/inspector_overlay/build_inspector_overlay.stamp 
+      set -e
 
       if [ ! -d "out/Default/obj" ]; then
         echo "out/Default/obj doesn't exist!"
@@ -544,7 +546,9 @@ step-electron-build-prep: &step-electron-build-prep
       echo "Invoking Blink"
       ninja -d explain -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES 
       echo "Stamp stat: "
+      set +e
       stat out/Default/obj/third_party/devtools-frontend/src/inspector_overlay/build_inspector_overlay.stamp 
+      set -e
 
 step-electron-build: &step-electron-build
   run:
