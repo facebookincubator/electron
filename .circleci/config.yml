@@ -512,6 +512,9 @@ step-gn-gen-default: &step-gn-gen-default
     command: |
       cd src
       echo "Current timestamp is `date +%s`"
+      echo "Stamp stat: "
+      stat out/Default/obj/third_party/devtools-frontend/src/inspector_overlay/build_inspector_overlay.stamp 
+
       if [ ! -d "out/Default/obj" ]; then
         echo "out/Default/obj doesn't exist!"
         gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
@@ -539,7 +542,9 @@ step-electron-build-prep: &step-electron-build-prep
       cd src
       echo "Current timestamp is `date +%s`"
       echo "Invoking Blink"
-      ninja -d explain -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES  
+      ninja -d explain -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES 
+      echo "Stamp stat: "
+      stat out/Default/obj/third_party/devtools-frontend/src/inspector_overlay/build_inspector_overlay.stamp 
 
 step-electron-build: &step-electron-build
   run:
