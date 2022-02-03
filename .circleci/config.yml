@@ -1688,7 +1688,7 @@ commands:
       - *step-fix-sync-on-mac
       - *step-setup-env-for-build
       - *step-setup-goma-for-build
-      - *step-gn-gen-default
+      # - *step-gn-gen-default
 
       # Electron build prep
       - *step-restore-out-cache-publish
