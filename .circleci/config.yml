@@ -1032,7 +1032,7 @@ step-restore-out-cache-publish: &step-restore-out-cache-publish
       - ./src/out/Default
     keys:
       - v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision  }}
-    name: Restoring out cache
+    name: Restoring out cache for publish
 
 step-set-git-cache-path: &step-set-git-cache-path
   run:
@@ -1709,7 +1709,6 @@ commands:
       - *step-restore-out-cache-publish
       - *step-gn-gen-default
       - *step-electron-build-prep
-      - *step-save-out-cache
       - *step-save-out-cache-publish
 
       # Electron app
