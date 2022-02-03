@@ -557,7 +557,7 @@ step-electron-build: &step-electron-build
         # Regenerate because we just deleted some ninja files 
         gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
       fi
-      ninja -C out/Default electron -j $NUMBER_OF_NINJA_PROCESSES
+      ninja -d explain -C out/Default electron -j $NUMBER_OF_NINJA_PROCESSES
       node electron/script/check-symlinks.js
 
 step-native-unittests-build: &step-native-unittests-build
