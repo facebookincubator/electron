@@ -1020,7 +1020,6 @@ step-restore-out-cache-publish: &step-restore-out-cache-publish
     paths:
       - ./src/out/Default
     keys:
-      - v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .BuildNum }}
       - v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision  }}
     name: Restoring out cache
 
@@ -1052,7 +1051,6 @@ step-save-out-cache-publish: &step-save-out-cache-publish
   save_cache:
     paths:
       - ./src/out/Default
-    key: v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .BuildNum }}
     key: v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision }}
     name: Persisting out cache for publish
 
