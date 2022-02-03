@@ -511,6 +511,7 @@ step-gn-gen-default: &step-gn-gen-default
     name: Default GN gen
     command: |
       cd src
+      echo "Current timestamp is `date +%s`"
       if [ ! -d "out/Default/obj" ]; then
         echo "out/Default/obj doesn't exist!"
         gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
@@ -536,6 +537,7 @@ step-electron-build-prep: &step-electron-build-prep
     no_output_timeout: 30m
     command: |
       cd src
+      echo "Current timestamp is `date +%s`"
       echo "Invoking Blink"
       ninja -d explain -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES  
 
