@@ -536,9 +536,9 @@ step-electron-build-prep: &step-electron-build-prep
     no_output_timeout: 30m
     command: |
       cd src
-      echo "File Timestamp is `stat --format='%Y out/Default/gen/base/android/library_loader/anchor_functions_buildflags.h`"
+      echo "File Timestamp is `stat --format='%Y out/Default/gen/base/android/library_loader/anchor_functions_buildflags.h'`"
       ninja -d explain -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
-      echo "File Timestamp is `stat --format='%Y out/Default/gen/base/android/library_loader/anchor_functions_buildflags.h`"
+      echo "File Timestamp is `stat --format='%Y out/Default/gen/base/android/library_loader/anchor_functions_buildflags.h'`"
 
 step-electron-build: &step-electron-build
   run:
