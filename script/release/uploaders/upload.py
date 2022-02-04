@@ -118,20 +118,20 @@ def main():
   shutil.copy2(ffmpeg_build_path, ffmpeg_zip)
   upload_electron(release, ffmpeg_zip, args)
 
-  chromedriver = get_zip_name('chromedriver', ELECTRON_VERSION)
-  chromedriver_zip = os.path.join(OUT_DIR, chromedriver)
-  shutil.copy2(os.path.join(OUT_DIR, 'chromedriver.zip'), chromedriver_zip)
-  upload_electron(release, chromedriver_zip, args)
+  # chromedriver = get_zip_name('chromedriver', ELECTRON_VERSION)
+  # chromedriver_zip = os.path.join(OUT_DIR, chromedriver)
+  # shutil.copy2(os.path.join(OUT_DIR, 'chromedriver.zip'), chromedriver_zip)
+  # upload_electron(release, chromedriver_zip, args)
 
-  mksnapshot = get_zip_name('mksnapshot', ELECTRON_VERSION)
-  mksnapshot_zip = os.path.join(OUT_DIR, mksnapshot)
-  if get_target_arch().startswith('arm') and PLATFORM != 'darwin':
-    # Upload the x64 binary for arm/arm64 mksnapshot
-    mksnapshot = get_zip_name('mksnapshot', ELECTRON_VERSION, 'x64')
-    mksnapshot_zip = os.path.join(OUT_DIR, mksnapshot)
+  # mksnapshot = get_zip_name('mksnapshot', ELECTRON_VERSION)
+  # mksnapshot_zip = os.path.join(OUT_DIR, mksnapshot)
+  # if get_target_arch().startswith('arm') and PLATFORM != 'darwin':
+  #   # Upload the x64 binary for arm/arm64 mksnapshot
+  #   mksnapshot = get_zip_name('mksnapshot', ELECTRON_VERSION, 'x64')
+  #   mksnapshot_zip = os.path.join(OUT_DIR, mksnapshot)
 
-  shutil.copy2(os.path.join(OUT_DIR, 'mksnapshot.zip'), mksnapshot_zip)
-  upload_electron(release, mksnapshot_zip, args)
+  # shutil.copy2(os.path.join(OUT_DIR, 'mksnapshot.zip'), mksnapshot_zip)
+  # upload_electron(release, mksnapshot_zip, args)
 
   if PLATFORM == 'linux' and get_target_arch() == 'x64':
     # Upload the hunspell dictionaries only from the linux x64 build

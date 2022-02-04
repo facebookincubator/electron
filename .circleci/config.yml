@@ -511,7 +511,12 @@ step-gn-gen-default: &step-gn-gen-default
     name: Default GN gen
     command: |
       cd src
-      gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+      if [ ! -d "out/Default/obj" ]; then
+        echo "out/Default/obj doesn't exist!"
+        gn gen out/Default --args="import(\"$GN_CONFIG\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+      else
+        echo "out/Default/obj exists. Nothing to do"
+      fi
 
 step-gn-check: &step-gn-check
   run:
@@ -525,38 +530,113 @@ step-gn-check: &step-gn-check
       node electron/script/gen-hunspell-filenames.js --check
       node electron/script/gen-libc++-filenames.js --check
 
+step-electron-build-prep-stage-1: &step-electron-build-prep-stage-1
+  run:
+    name: Electron build prep (stage 1)
+    no_output_timeout: 30m
+    command: |
+      cd src
+      if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
+        ninja -C out/Default clang_x64_v8_arm64/obj/skia/libskia.a -j $NUMBER_OF_NINJA_PROCESSES 
+        ninja -C out/Default clang_x64_v8_arm64/obj/v8/v8.stamp -j $NUMBER_OF_NINJA_PROCESSES 
+        ninja -C out/Default clang_x64_v8_arm64/obj/media/mojo/mojom/mojom.stamp -j $NUMBER_OF_NINJA_PROCESSES 
+        ninja -C out/Default clang_x64_v8_arm64/obj/third_party/blink/renderer/platform/libblink_platform.a -j $NUMBER_OF_NINJA_PROCESSES 
+      fi
+
+step-electron-build-prep-stage-2: &step-electron-build-prep-stage-2
+  run:
+    name: Electron build prep (stage 2)
+    no_output_timeout: 30m
+    command: |
+      cd src
+      if [[ ! -f "out/Default/mksnapshot.zip" ]]; then 
+        # On arm platforms we generate a cross-arch ffmpeg that ninja does not seem
+        # to realize is not correct / should be rebuilt.  We delete it here so it is
+        # rebuilt
+        if [ "$TRIGGER_ARM_TEST" == "true" ]; then
+          rm -f src/out/Default/libffmpeg.so
+        fi
+
+        # Enable if things get really bad
+        # if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
+        #   diskutil erasevolume HFS+ "xcode_disk" `hdiutil attach -nomount ram://12582912`
+        #   mv /Applications/Xcode-12.beta.5.app /Volumes/xcode_disk/
+        #   ln -s /Volumes/xcode_disk/Xcode-12.beta.5.app /Applications/Xcode-12.beta.5.app
+        # fi
+
+        # Lets generate a snapshot and mksnapshot and then delete all the x-compiled generated files to save space
+        if [ "$USE_PREBUILT_V8_CONTEXT_SNAPSHOT" == "1" ]; then
+          ninja -C out/Default electron:electron_mksnapshot_zip -j $NUMBER_OF_NINJA_PROCESSES
+          ninja -C out/Default tools/v8_context_snapshot -j $NUMBER_OF_NINJA_PROCESSES
+          gn desc out/Default v8:run_mksnapshot_default args > out/Default/mksnapshot_args
+          (cd out/Default; zip mksnapshot.zip mksnapshot_args clang_x64_v8_arm64/gen/v8/embedded.S)
+          rm -rf out/Default/clang_x64_v8_arm64/gen
+          rm -rf out/Default/clang_x64_v8_arm64/obj
+          rm -rf out/Default/clang_x64/obj
+
+          # Regenerate because we just deleted some ninja files 
+          gn gen out/Default --args="import(\"$GN_CONFIG\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+        fi
+      fi
+
+step-electron-build-prep-stage-3: &step-electron-build-prep-stage-3
+  run:
+    name: Electron build prep (stage 3)
+    no_output_timeout: 30m
+    command: |
+      cd src
+
+      ninja -C out/Default v8 -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default third_party/webrtc/pc -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default third_party/ffmpeg -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default media/mojo/mojom -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default third_party/blink/renderer/platform -j $NUMBER_OF_NINJA_PROCESSES 
+
+step-electron-build-prep-stage-4: &step-electron-build-prep-stage-4
+  run:
+    name: Electron build prep (stage 4)
+    no_output_timeout: 30m
+    command: |
+      cd src
+      ninja -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES 
+
+step-tar-out-default: &step-tar-out-default
+  run: 
+    name: Tar ./src/out/Default
+    command: |
+      if [[ ! -f "out.tar.gz" && ! -f "out.tar.extracted" ]]; then
+        tar --format=posix -czvf out.tar.gz ./src/out/Default
+      fi
+      if [[ -f "out.tar.extracted" ]]; then
+        rm out.tar.extracted
+      fi
+
+step-restore-from-tar: &step-restore-from-tar
+  run: 
+    name: untar to ./src/out/Default
+    command: |
+      if [[ -f "out.tar.gz" ]]; then
+        rm -rf ./src/out/Default
+        tar xvf out.tar.gz
+        rm out.tar.gz
+        touch out.tar.extracted
+      fi
+
+step-delete-tar: &step-delete-tar
+  run: 
+    name: Delete tar
+    command: |
+      if [[ -f "out.tar.gz" ]]; then
+        rm out.tar.gz
+      fi
+
 step-electron-build: &step-electron-build
   run:
     name: Electron build
     no_output_timeout: 30m
     command: |
-      # On arm platforms we generate a cross-arch ffmpeg that ninja does not seem
-      # to realize is not correct / should be rebuilt.  We delete it here so it is
-      # rebuilt
-      if [ "$TRIGGER_ARM_TEST" == "true" ]; then
-        rm -f src/out/Default/libffmpeg.so
-      fi
       cd src
-      # Enable if things get really bad
-      # if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
-      #   diskutil erasevolume HFS+ "xcode_disk" `hdiutil attach -nomount ram://12582912`
-      #   mv /Applications/Xcode-12.beta.5.app /Volumes/xcode_disk/
-      #   ln -s /Volumes/xcode_disk/Xcode-12.beta.5.app /Applications/Xcode-12.beta.5.app
-      # fi
-
-      # Lets generate a snapshot and mksnapshot and then delete all the x-compiled generated files to save space
-      if [ "$USE_PREBUILT_V8_CONTEXT_SNAPSHOT" == "1" ]; then
-        ninja -C out/Default electron:electron_mksnapshot_zip -j $NUMBER_OF_NINJA_PROCESSES
-        ninja -C out/Default tools/v8_context_snapshot -j $NUMBER_OF_NINJA_PROCESSES
-        gn desc out/Default v8:run_mksnapshot_default args > out/Default/mksnapshot_args
-        (cd out/Default; zip mksnapshot.zip mksnapshot_args clang_x64_v8_arm64/gen/v8/embedded.S)
-        rm -rf out/Default/clang_x64_v8_arm64/gen
-        rm -rf out/Default/clang_x64_v8_arm64/obj
-        rm -rf out/Default/clang_x64/obj
-
-        # Regenerate because we just deleted some ninja files 
-        gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
-      fi
       ninja -C out/Default electron -j $NUMBER_OF_NINJA_PROCESSES
       node electron/script/check-symlinks.js
 
@@ -631,7 +711,7 @@ step-electron-maybe-chromedriver-gn-gen: &step-electron-maybe-chromedriver-gn-ge
     command: |
       cd src
       if [ "$TARGET_ARCH" == "arm" ] || [ "$TARGET_ARCH" == "arm64" ]; then
-        gn gen out/chromedriver --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") is_component_ffmpeg=false proprietary_codecs=false $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+        gn gen out/chromedriver --args="import(\"$GN_CONFIG\") is_component_ffmpeg=false proprietary_codecs=false $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
       fi
 
 step-electron-chromedriver-build: &step-electron-chromedriver-build
@@ -754,7 +834,7 @@ step-ffmpeg-gn-gen: &step-ffmpeg-gn-gen
     name: ffmpeg GN gen
     command: |
       cd src
-      gn gen out/ffmpeg --args="import(\"//electron/build/args/ffmpeg.gn\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS"
+      gn gen out/ffmpeg --args="import(\"//electron/build/args/ffmpeg.gn\") $GN_EXTRA_ARGS"
 
 step-ffmpeg-build: &step-ffmpeg-build
   run:
@@ -1001,6 +1081,38 @@ step-restore-out-cache: &step-restore-out-cache
       - v9-out-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
     name: Restoring out cache
 
+step-restore-out-cache-publish-stage-1: &step-restore-out-cache-publish-stage-1
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-stage-1-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Restoring out cache for publish (stage 1)
+
+step-restore-out-cache-publish-stage-2: &step-restore-out-cache-publish-stage-2
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-stage-2-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Restoring out cache for publish (stage 2)
+
+step-restore-out-cache-publish-stage-3: &step-restore-out-cache-publish-stage-3
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-stage-3-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Restoring out cache for publish (stage 3)
+
+step-restore-out-cache-publish-stage-4: &step-restore-out-cache-publish-stage-4
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-stage-4-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Restoring out cache for publish (stage 4)
+
 step-set-git-cache-path: &step-set-git-cache-path
   run:
     name: Set GIT_CACHE_PATH to make gclient to use the cache
@@ -1021,9 +1133,38 @@ step-save-git-cache: &step-save-git-cache
 step-save-out-cache: &step-save-out-cache
   save_cache:
     paths:
-      - ./src/out/Default
+      - ./out.tar.gz
     key: v9-out-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
     name: Persisting out cache
+
+
+step-save-out-cache-publish-stage-1: &step-save-out-cache-publish-stage-1
+  save_cache:
+    paths:
+      - ./out.tar.gz
+    key: v9-out-cache-publish-stage-1-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Persisting out cache for publish (stage 1)
+
+step-save-out-cache-publish-stage-2: &step-save-out-cache-publish-stage-2
+  save_cache:
+    paths:
+      - ./out.tar.gz
+    key: v9-out-cache-publish-stage-2-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Persisting out cache for publish (stage 2)
+
+step-save-out-cache-publish-stage-3: &step-save-out-cache-publish-stage-3
+  save_cache:
+    paths:
+      - ./out.tar.gz
+    key: v9-out-cache-publish-stage-3-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Persisting out cache for publish (stage 3)
+
+step-save-out-cache-publish-stage-4: &step-save-out-cache-publish-stage-4
+  save_cache:
+    paths:
+      - ./out.tar.gz
+    key: v9-out-cache-publish-stage-4-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Persisting out cache for publish (stage 4)
 
 step-run-electron-only-hooks: &step-run-electron-only-hooks
   run:
@@ -1663,12 +1804,49 @@ commands:
             - *step-minimize-workspace-size-from-checkout
       - *step-fix-sync-on-mac
       - *step-setup-env-for-build
-      - *step-setup-goma-for-build
+      # - *step-setup-goma-for-build
+      # - *step-gn-gen-default
+
+      # Electron build prep
+      - run:
+          name: Export arch to a file
+          command: |
+            echo $TARGET_ARCH > arch.txt
+   
+      - *step-restore-out-cache-publish-stage-1
+      - *step-restore-from-tar
       - *step-gn-gen-default
+      - *step-electron-build-prep-stage-1
+      - *step-tar-out-default
+      - *step-save-out-cache-publish-stage-1
+      - *step-delete-tar
+
+      - *step-restore-out-cache-publish-stage-2
+      - *step-restore-from-tar
+      - *step-electron-build-prep-stage-2
+      - *step-tar-out-default
+      - *step-save-out-cache-publish-stage-2
+      - *step-delete-tar
+
+      - *step-restore-out-cache-publish-stage-3
+      - *step-restore-from-tar
+      - *step-electron-build-prep-stage-3
+      - *step-tar-out-default
+      - *step-save-out-cache-publish-stage-3
+      - *step-delete-tar
+
+      - *step-restore-out-cache-publish-stage-4
+      - *step-restore-from-tar
+      - *step-electron-build-prep-stage-4
+      - *step-tar-out-default
+      - *step-save-out-cache-publish-stage-4
+      - *step-delete-tar
 
       # Electron app
       - *step-electron-build
+
       - *step-show-goma-stats
+
       - *step-maybe-generate-breakpad-symbols
       - *step-maybe-electron-dist-strip
       - *step-electron-dist-build
@@ -1677,13 +1855,13 @@ commands:
       - *step-symbols-store
 
       # mksnapshot
-      - *step-mksnapshot-build
-      - *step-mksnapshot-store
+      # - *step-mksnapshot-build
+      # - *step-mksnapshot-store
 
       # chromedriver
-      - *step-electron-maybe-chromedriver-gn-gen
-      - *step-electron-chromedriver-build
-      - *step-electron-chromedriver-store
+      # - *step-electron-maybe-chromedriver-gn-gen
+      # - *step-electron-chromedriver-build
+      # - *step-electron-chromedriver-store
 
       # Node.js headers
       - *step-nodejs-headers-build
