@@ -553,7 +553,7 @@ step-electron-build: &step-electron-build
       fi
       cd src
 
-      ninja -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -d explain -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
 
       # Enable if things get really bad
       # if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
@@ -1706,7 +1706,13 @@ commands:
       - *step-electron-build-prep
       - run: 
           name: Tar ./src/out/Default
-          command: tar  --format=posix -czvfout.tar.gz ./src/out/Default
+          command: tar  --format=posix -czvf out.tar.gz ./src/out/Default
+      - run:
+          name: rm ./src/out/Default
+          command: rm -rf ./src/out/Default
+      - run:
+          name: untar to ./src/out/Default
+          command: tar xvf out.tar.gz
       - *step-save-out-cache-publish
 
       # Electron app
