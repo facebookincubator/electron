@@ -1705,8 +1705,8 @@ commands:
       - *step-gn-gen-default
       - *step-electron-build-prep
       - run: 
-        name: Tar ./src/out/Default
-        command: tar -czvf --format=posix out.tar.gz ./src/out/Default
+          name: Tar ./src/out/Default
+          command: tar -czvf --format=posix out.tar.gz ./src/out/Default
       - *step-save-out-cache-publish
 
       # Electron app
