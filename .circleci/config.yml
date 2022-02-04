@@ -573,7 +573,7 @@ step-electron-build: &step-electron-build
         rm -rf out/Default/clang_x64/obj
 
         # Regenerate because we just deleted some ninja files 
-        gn gen out/Default --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+        gn gen out/Default --args="import(\"$GN_CONFIG\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
       fi
       ninja -C out/Default electron -j $NUMBER_OF_NINJA_PROCESSES
       node electron/script/check-symlinks.js
@@ -649,7 +649,7 @@ step-electron-maybe-chromedriver-gn-gen: &step-electron-maybe-chromedriver-gn-ge
     command: |
       cd src
       if [ "$TARGET_ARCH" == "arm" ] || [ "$TARGET_ARCH" == "arm64" ]; then
-        gn gen out/chromedriver --args="import(\"$GN_CONFIG\") import(\"$GN_GOMA_FILE\") is_component_ffmpeg=false proprietary_codecs=false $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+        gn gen out/chromedriver --args="import(\"$GN_CONFIG\") is_component_ffmpeg=false proprietary_codecs=false $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
       fi
 
 step-electron-chromedriver-build: &step-electron-chromedriver-build
@@ -772,7 +772,7 @@ step-ffmpeg-gn-gen: &step-ffmpeg-gn-gen
     name: ffmpeg GN gen
     command: |
       cd src
-      gn gen out/ffmpeg --args="import(\"//electron/build/args/ffmpeg.gn\") import(\"$GN_GOMA_FILE\") $GN_EXTRA_ARGS"
+      gn gen out/ffmpeg --args="import(\"//electron/build/args/ffmpeg.gn\") $GN_EXTRA_ARGS"
 
 step-ffmpeg-build: &step-ffmpeg-build
   run:
