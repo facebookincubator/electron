@@ -1047,7 +1047,7 @@ step-save-git-cache: &step-save-git-cache
 step-save-out-cache: &step-save-out-cache
   save_cache:
     paths:
-      - ./src/out/Default
+      - ./out.tar.gz
     key: v9-out-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
     name: Persisting out cache
 
@@ -1055,7 +1055,7 @@ step-save-out-cache: &step-save-out-cache
 step-save-out-cache-publish: &step-save-out-cache-publish
   save_cache:
     paths:
-      - ./src/out/Default
+      - ./out.tar.gz
     key: v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision }}
     name: Persisting out cache for publish
 
@@ -1702,17 +1702,23 @@ commands:
 
       # Electron build prep
       - *step-restore-out-cache-publish
-      - *step-gn-gen-default
-      - *step-electron-build-prep
-      - run: 
-          name: Tar ./src/out/Default
-          command: tar  --format=posix -czvf out.tar.gz ./src/out/Default
       - run:
           name: rm ./src/out/Default
           command: rm -rf ./src/out/Default
       - run:
           name: untar to ./src/out/Default
-          command: tar xvf out.tar.gz
+          command: |
+            if [ -f "out.tar.gz" ]; then
+              tar xvf out.tar.gz
+            fi
+      - *step-gn-gen-default
+      - *step-electron-build-prep
+      - run: 
+          name: Tar ./src/out/Default
+          command: |
+            if [ ! -f "out.tar.gz" ]; then
+              tar --format=posix -czvf out.tar.gz ./src/out/Default
+            fi
       - *step-save-out-cache-publish
 
       # Electron app
