@@ -537,7 +537,7 @@ step-electron-build-prep: &step-electron-build-prep
     command: |
       cd src
       echo "Current timestamp is `date +%s`"
-      ninja -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -d explain -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
 
 step-electron-build: &step-electron-build
   run:
