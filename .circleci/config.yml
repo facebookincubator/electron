@@ -537,7 +537,7 @@ step-electron-build-prep: &step-electron-build-prep
     command: |
       cd src
       echo "File Timestamp is `stat --format='%Y' out/Default/gen/base/android/library_loader/anchor_functions_buildflags.h`"
-      ninja -d explain -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -d explain -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES 
       echo "File Timestamp is `stat --format='%Y' out/Default/gen/base/android/library_loader/anchor_functions_buildflags.h`"
 
 step-electron-build: &step-electron-build
@@ -553,7 +553,7 @@ step-electron-build: &step-electron-build
       fi
       cd src
 
-      ninja -d explain -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -d explain -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES 
 
       # Enable if things get really bad
       # if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
