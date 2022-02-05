@@ -1716,7 +1716,7 @@ commands:
               tar --format=posix -czvf out.tar.gz ./src/out/Default
             fi
       - *step-save-out-cache-publish
-      - run 
+      - run: 
           name: Delete tar
           command: rm out.tar.gz
 
