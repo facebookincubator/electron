@@ -154,7 +154,7 @@ env-arm: &env-arm
 env-apple-silicon: &env-apple-silicon
   GN_EXTRA_ARGS: 'target_cpu = "arm64" use_prebuilt_v8_context_snapshot = true'
   TARGET_ARCH: arm64
-  USE_PREBUILT_V8_CONTEXT_SNAPSHOT: 1
+  # USE_PREBUILT_V8_CONTEXT_SNAPSHOT: 1
   npm_config_arch: arm64
 
 env-arm64: &env-arm64
@@ -550,8 +550,6 @@ step-electron-build: &step-electron-build
         rm -f src/out/Default/libffmpeg.so
       fi
       cd src
-
-      ninja -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES 
 
       # Enable if things get really bad
       # if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
