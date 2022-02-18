@@ -1758,7 +1758,7 @@ commands:
       - *step-restore-out-cache-publish-stage-2
       - *step-electron-build-prep-stage-2
       - *step-tar-out-default
-      - *step-save-out-cache-publish-stage-1
+      - *step-save-out-cache-publish-stage-2
 
       # Electron app
       - *step-electron-build
