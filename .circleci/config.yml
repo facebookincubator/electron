@@ -541,7 +541,7 @@ step-electron-build-prep-stage-1: &step-electron-build-prep-stage-1
       ninja -C out/Default third_party/webrtc/pc -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default third_party/ffmpeg -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default media/mojo/mojom -j $NUMBER_OF_NINJA_PROCESSES 
-      ninja -C out/Default third_party/blink/renderer/core -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default third_party/blink/renderer/platform -j $NUMBER_OF_NINJA_PROCESSES 
 
 step-electron-build-prep-stage-2: &step-electron-build-prep-stage-2
   run:
@@ -1757,8 +1757,8 @@ commands:
       - *step-save-out-cache-publish-stage-1
       - *step-delete-tar
       - *step-restore-out-cache-publish-stage-2
-      - *step-electron-build-prep-stage-2
       - *step-tar-out-default
+      - *step-electron-build-prep-stage-2
       - *step-save-out-cache-publish-stage-2
 
       # Electron app
