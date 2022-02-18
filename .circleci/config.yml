@@ -537,15 +537,10 @@ step-electron-build-prep-stage-1: &step-electron-build-prep-stage-1
     command: |
       cd src
       ninja -C out/Default v8 -j $NUMBER_OF_NINJA_PROCESSES 
-      ninja -C out/Default v8:v8_libplatform -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default third_party/webrtc/pc -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default third_party/ffmpeg -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default media/mojo/mojom -j $NUMBER_OF_NINJA_PROCESSES 
-      ninja -C out/Default third_party/libaom -j $NUMBER_OF_NINJA_PROCESSES 
-      ninja -C out/Default third_party/libvpx -j $NUMBER_OF_NINJA_PROCESSES 
-      ninja -C out/Default third_party/swiftshader -j $NUMBER_OF_NINJA_PROCESSES 
-      ninja -C out/Default third_party/angle -j $NUMBER_OF_NINJA_PROCESSES 
 
 step-electron-build-prep-stage-2: &step-electron-build-prep-stage-2
   run:
@@ -562,6 +557,16 @@ step-tar-out-default: &step-tar-out-default
     command: |
       if [ ! -f "out.tar.gz" ]; then
         tar --format=posix -czvf out.tar.gz ./src/out/Default
+      fi
+
+step-restore-from-tar: &restore-from-tar
+  run: 
+    name: untar to ./src/out/Default
+    command: |
+      if [ -f "out.tar.gz" ]; then
+        rm -rf ./src/out/Default
+        tar xvf out.tar.gz
+        rm out.tar.gz
       fi
 
 step-delete-tar: &step-delete-tar
@@ -1054,6 +1059,14 @@ step-restore-out-cache-publish-stage-1: &step-restore-out-cache-publish-stage-1
       - v9-out-cache-publish-stage-1-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision  }}
     name: Restoring out cache for publish (stage 1)
 
+step-restore-out-cache-publish-stage-2: &step-restore-out-cache-publish-stage-2
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-stage-2-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision  }}
+    name: Restoring out cache for publish (stage 2)
+
 step-set-git-cache-path: &step-set-git-cache-path
   run:
     name: Set GIT_CACHE_PATH to make gclient to use the cache
@@ -1085,6 +1098,13 @@ step-save-out-cache-publish-stage-1: &step-save-out-cache-publish-stage-1
       - ./out.tar.gz
     key: v9-out-cache-publish-stage-1-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision }}
     name: Persisting out cache for publish (stage 1)
+
+step-save-out-cache-publish-stage-2: &step-save-out-cache-publish-stage-2
+  save_cache:
+    paths:
+      - ./out.tar.gz
+    key: v9-out-cache-publish-stage-2-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision }}
+    name: Persisting out cache for publish (stage 2)
 
 step-run-electron-only-hooks: &step-run-electron-only-hooks
   run:
@@ -1729,21 +1749,16 @@ commands:
 
       # Electron build prep
       - *step-restore-out-cache-publish-stage-1
-      - run:
-          name: rm ./src/out/Default
-          command: rm -rf ./src/out/Default
-      - run:
-          name: untar to ./src/out/Default
-          command: |
-            if [ -f "out.tar.gz" ]; then
-              tar xvf out.tar.gz
-            fi
+      - *step-restore-from-tar
       - *step-gn-gen-default
       - *step-electron-build-prep-stage-1
       - *step-tar-out-default
       - *step-save-out-cache-publish-stage-1
       - *step-delete-tar
+      - *step-restore-out-cache-publish-stage-2
       - *step-electron-build-prep-stage-2
+      - *step-tar-out-default
+      - *step-save-out-cache-publish-stage-1
 
       # Electron app
       - *step-electron-build
