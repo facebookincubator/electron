@@ -530,17 +530,31 @@ step-gn-check: &step-gn-check
       node electron/script/gen-hunspell-filenames.js --check
       node electron/script/gen-libc++-filenames.js --check
 
-step-electron-build-prep: &step-electron-build-prep
+step-electron-build-prep-stage-1: &step-electron-build-prep-stage-1
   run:
-    name: Electron build prep
+    name: Electron build prep (stage 1)
     no_output_timeout: 30m
     command: |
       cd src
       ninja -C out/Default v8 -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default v8:v8_libplatform -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
-      ninja -C out/Default third_party/webrtc -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default third_party/webrtc/pc -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default third_party/ffmpeg -j $NUMBER_OF_NINJA_PROCESSES 
+
+
+step-tar-out-default: &step-tar-out-default
+  run: 
+    name: Tar ./src/out/Default
+    command: |
+      if [ ! -f "out.tar.gz" ]; then
+        tar --format=posix -czvf out.tar.gz ./src/out/Default
+      fi
+
+step-delete-tar: &step-delete-tar
+  run: 
+    name: Delete tar
+    command: rm out.tar.gz
 
 step-electron-build: &step-electron-build
   run:
@@ -1019,13 +1033,13 @@ step-restore-out-cache: &step-restore-out-cache
       - v9-out-cache-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}
     name: Restoring out cache
 
-step-restore-out-cache-publish: &step-restore-out-cache-publish
+step-restore-out-cache-publish-stage-1: &step-restore-out-cache-publish-stage-1
   restore_cache:
     paths:
       - ./src/out/Default
     keys:
-      - v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision  }}
-    name: Restoring out cache for publish
+      - v9-out-cache-publish-stage-1-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision  }}
+    name: Restoring out cache for publish (stage 1)
 
 step-set-git-cache-path: &step-set-git-cache-path
   run:
@@ -1052,12 +1066,12 @@ step-save-out-cache: &step-save-out-cache
     name: Persisting out cache
 
 
-step-save-out-cache-publish: &step-save-out-cache-publish
+step-save-out-cache-publish-stage-1: &step-save-out-cache-publish-stage-1
   save_cache:
     paths:
       - ./out.tar.gz
-    key: v9-out-cache-publish-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision }}
-    name: Persisting out cache for publish
+    key: v9-out-cache-publish-stage-1-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision }}
+    name: Persisting out cache for publish (stage 1)
 
 step-run-electron-only-hooks: &step-run-electron-only-hooks
   run:
@@ -1701,7 +1715,7 @@ commands:
       # - *step-gn-gen-default
 
       # Electron build prep
-      - *step-restore-out-cache-publish
+      - *step-restore-out-cache-publish-stage-1
       - run:
           name: rm ./src/out/Default
           command: rm -rf ./src/out/Default
@@ -1712,17 +1726,10 @@ commands:
               tar xvf out.tar.gz
             fi
       - *step-gn-gen-default
-      - *step-electron-build-prep
-      - run: 
-          name: Tar ./src/out/Default
-          command: |
-            if [ ! -f "out.tar.gz" ]; then
-              tar --format=posix -czvf out.tar.gz ./src/out/Default
-            fi
-      - *step-save-out-cache-publish
-      - run: 
-          name: Delete tar
-          command: rm out.tar.gz
+      - *step-electron-build-prep-stage-1
+      - *step-tar-out-default
+      - *step-save-out-cache-publish-stage-1
+      - *step-delete-tar
 
       # Electron app
       - *step-electron-build
