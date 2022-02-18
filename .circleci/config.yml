@@ -556,18 +556,22 @@ step-tar-out-default: &step-tar-out-default
   run: 
     name: Tar ./src/out/Default
     command: |
-      if [ ! -f "out.tar.gz" ]; then
+      if [[ ! -f "out.tar.gz" && ! -f "out.tar.extracted" ]]; then
         tar --format=posix -czvf out.tar.gz ./src/out/Default
+      fi
+      if [[ -f "out.tar.extracted"]]; then
+        rm out.tar.extracted
       fi
 
 step-restore-from-tar: &step-restore-from-tar
   run: 
     name: untar to ./src/out/Default
     command: |
-      if [ -f "out.tar.gz" ]; then
+      if [[ -f "out.tar.gz" ]]; then
         rm -rf ./src/out/Default
         tar xvf out.tar.gz
         rm out.tar.gz
+        touch out.tar.extracted
       fi
 
 step-delete-tar: &step-delete-tar
