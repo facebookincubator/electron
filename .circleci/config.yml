@@ -538,6 +538,9 @@ step-electron-build-prep: &step-electron-build-prep
       cd src
       ninja -C out/Default v8 -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default v8:v8_libplatform -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default third_party/webrtc -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default third_party/ffmpeg -j $NUMBER_OF_NINJA_PROCESSES 
 
 step-electron-build: &step-electron-build
   run:
