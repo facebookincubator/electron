@@ -536,7 +536,8 @@ step-electron-build-prep: &step-electron-build-prep
     no_output_timeout: 30m
     command: |
       cd src
-      ninja -C out/Default third_party/blink/public:blink -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default v8 -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default v8:v8_libplatform -j $NUMBER_OF_NINJA_PROCESSES 
 
 step-electron-build: &step-electron-build
   run:
