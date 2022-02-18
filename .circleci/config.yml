@@ -559,7 +559,7 @@ step-tar-out-default: &step-tar-out-default
         tar --format=posix -czvf out.tar.gz ./src/out/Default
       fi
 
-step-restore-from-tar: &restore-from-tar
+step-restore-from-tar: &step-restore-from-tar
   run: 
     name: untar to ./src/out/Default
     command: |
