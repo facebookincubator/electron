@@ -577,7 +577,10 @@ step-restore-from-tar: &step-restore-from-tar
 step-delete-tar: &step-delete-tar
   run: 
     name: Delete tar
-    command: rm out.tar.gz
+    command: |
+      if [[ -f "out.tar.gz" ]]; then
+        rm out.tar.gz
+      fi
 
 step-electron-build: &step-electron-build
   run:
@@ -1764,6 +1767,7 @@ commands:
       - *step-electron-build-prep-stage-2
       - *step-tar-out-default
       - *step-save-out-cache-publish-stage-2
+      - *step-delete-tar
 
       # Electron app
       - *step-electron-build
