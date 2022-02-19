@@ -1764,6 +1764,7 @@ commands:
       - *step-save-out-cache-publish-stage-1
       - *step-delete-tar
       - *step-restore-out-cache-publish-stage-2
+      - *step-tar-out-default
       - *step-electron-build-prep-stage-2
       - *step-tar-out-default
       - *step-save-out-cache-publish-stage-2
