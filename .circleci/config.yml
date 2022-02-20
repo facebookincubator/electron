@@ -603,18 +603,18 @@ step-electron-build: &step-electron-build
       # fi
 
       # Lets generate a snapshot and mksnapshot and then delete all the x-compiled generated files to save space
-      # if [ "$USE_PREBUILT_V8_CONTEXT_SNAPSHOT" == "1" ]; then
-      #   ninja -C out/Default electron:electron_mksnapshot_zip -j $NUMBER_OF_NINJA_PROCESSES
-      #   ninja -C out/Default tools/v8_context_snapshot -j $NUMBER_OF_NINJA_PROCESSES
-      #   gn desc out/Default v8:run_mksnapshot_default args > out/Default/mksnapshot_args
-      #   (cd out/Default; zip mksnapshot.zip mksnapshot_args clang_x64_v8_arm64/gen/v8/embedded.S)
-      #   rm -rf out/Default/clang_x64_v8_arm64/gen
-      #   rm -rf out/Default/clang_x64_v8_arm64/obj
-      #   rm -rf out/Default/clang_x64/obj
+      if [ "$USE_PREBUILT_V8_CONTEXT_SNAPSHOT" == "1" ]; then
+        ninja -C out/Default electron:electron_mksnapshot_zip -j $NUMBER_OF_NINJA_PROCESSES
+        ninja -C out/Default tools/v8_context_snapshot -j $NUMBER_OF_NINJA_PROCESSES
+        gn desc out/Default v8:run_mksnapshot_default args > out/Default/mksnapshot_args
+        (cd out/Default; zip mksnapshot.zip mksnapshot_args clang_x64_v8_arm64/gen/v8/embedded.S)
+        rm -rf out/Default/clang_x64_v8_arm64/gen
+        rm -rf out/Default/clang_x64_v8_arm64/obj
+        rm -rf out/Default/clang_x64/obj
 
-      #   # Regenerate because we just deleted some ninja files 
-      #   gn gen out/Default --args="import(\"$GN_CONFIG\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
-      # fi
+        # Regenerate because we just deleted some ninja files 
+        gn gen out/Default --args="import(\"$GN_CONFIG\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+      fi
       ninja -C out/Default electron -j $NUMBER_OF_NINJA_PROCESSES
       node electron/script/check-symlinks.js
 
@@ -1786,8 +1786,8 @@ commands:
       - *step-symbols-store
 
       # mksnapshot
-      # - *step-mksnapshot-build
-      # - *step-mksnapshot-store
+      - *step-mksnapshot-build
+      - *step-mksnapshot-store
 
       # chromedriver
       - *step-electron-maybe-chromedriver-gn-gen
