@@ -1064,7 +1064,7 @@ step-restore-out-cache-publish-stage-1: &step-restore-out-cache-publish-stage-1
     paths:
       - ./src/out/Default
     keys:
-      - v9-out-cache-publish-stage-1-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision  }}
+      - v9-out-cache-publish-stage-1-{{ arch }}-target-{{ .Environment.TARGET_ARCH }}-{{ .Revision }}
     name: Restoring out cache for publish (stage 1)
 
 step-restore-out-cache-publish-stage-2: &step-restore-out-cache-publish-stage-2
@@ -1072,7 +1072,7 @@ step-restore-out-cache-publish-stage-2: &step-restore-out-cache-publish-stage-2
     paths:
       - ./src/out/Default
     keys:
-      - v9-out-cache-publish-stage-2-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision  }}
+      - v9-out-cache-publish-stage-2-{{ arch }}-target-{{ .Environment.TARGET_ARCH }}-{{ .Revision }}
     name: Restoring out cache for publish (stage 2)
 
 step-set-git-cache-path: &step-set-git-cache-path
@@ -1104,14 +1104,14 @@ step-save-out-cache-publish-stage-1: &step-save-out-cache-publish-stage-1
   save_cache:
     paths:
       - ./out.tar.gz
-    key: v9-out-cache-publish-stage-1-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision }}
+    key: v9-out-cache-publish-stage-1-{{ arch }}-target-{{ .Environment.TARGET_ARCH }}-{{ .Revision }}
     name: Persisting out cache for publish (stage 1)
 
 step-save-out-cache-publish-stage-2: &step-save-out-cache-publish-stage-2
   save_cache:
     paths:
       - ./out.tar.gz
-    key: v9-out-cache-publish-stage-2-{{ checksum "src/electron/.depshash" }}-{{ checksum "src/electron/.depshash-target" }}-{{ .Revision }}
+    key: v9-out-cache-publish-stage-2-{{ arch }}-target-{{ .Environment.TARGET_ARCH }}-{{ .Revision }}
     name: Persisting out cache for publish (stage 2)
 
 step-run-electron-only-hooks: &step-run-electron-only-hooks
