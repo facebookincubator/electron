@@ -152,9 +152,10 @@ env-arm: &env-arm
   TARGET_ARCH: arm
 
 env-apple-silicon: &env-apple-silicon
-  GN_EXTRA_ARGS: 'target_cpu = "arm64" use_prebuilt_v8_context_snapshot = true'
+  # GN_EXTRA_ARGS: 'target_cpu = "arm64" use_prebuilt_v8_context_snapshot = true'
+  GN_EXTRA_ARGS: 'target_cpu = "arm64"'
   TARGET_ARCH: arm64
-  USE_PREBUILT_V8_CONTEXT_SNAPSHOT: 1
+  # USE_PREBUILT_V8_CONTEXT_SNAPSHOT: 1
   npm_config_arch: arm64
 
 env-arm64: &env-arm64
