@@ -621,7 +621,6 @@ step-electron-build-part-2: &step-electron-build-part-2
     name: Electron build. Part 2
     no_output_timeout: 30m
     command: |
-      cd src
       ninja -C out/Default electron -j $NUMBER_OF_NINJA_PROCESSES
       node electron/script/check-symlinks.js
 
