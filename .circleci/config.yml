@@ -1785,8 +1785,27 @@ commands:
 
       # Electron app
       - *step-electron-build-part-1
+      - run:
+          name: Copy v8_context_snapshot if applicable
+          command: |
+            if [ "$USE_PREBUILT_V8_CONTEXT_SNAPSHOT" == "1" ]; then
+              mkdir -p v8_context_snapshot
+              mkdir -p v8_context_snapshot.fake
+              cp src/out/Default/v8_context_snapshot.* v8_context_snapshot
+              cp src/out/Default/fake/v8_context_snapshot.* v8_context_snapshot.fake
+            fi
       - *step-restore-out-cache-publish-stage-2
       - *step-restore-from-tar
+      - run:
+          name: Copy v8_context_snapshot if applicable back
+          command: |
+            if [ "$USE_PREBUILT_V8_CONTEXT_SNAPSHOT" == "1" ]; then
+              mkdir -p v8_context_snapshot
+              mkdir -p v8_context_snapshot.fake
+              cp v8_context_snapshot/* src/out/Default/
+              mkdir -p src/out/Default/fake/
+              cp v8_context_snapshot.fake src/out/Default/fake/v8_context_snapshot.* 
+            fi
       - *step-electron-build-part-2
       - *step-show-goma-stats
       - *step-maybe-generate-breakpad-symbols
