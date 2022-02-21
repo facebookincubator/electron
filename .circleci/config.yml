@@ -582,9 +582,9 @@ step-delete-tar: &step-delete-tar
         rm out.tar.gz
       fi
 
-step-electron-build-part-1: &step-electron-build-part-1
+step-electron-build: &step-electron-build
   run:
-    name: Electron build. Part 1
+    name: Electron build
     no_output_timeout: 30m
     command: |
       # On arm platforms we generate a cross-arch ffmpeg that ninja does not seem
@@ -615,12 +615,6 @@ step-electron-build-part-1: &step-electron-build-part-1
         # Regenerate because we just deleted some ninja files 
         gn gen out/Default --args="import(\"$GN_CONFIG\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
       fi
-
-step-electron-build-part-2: &step-electron-build-part-2
-  run:
-    name: Electron build. Part 2
-    no_output_timeout: 30m
-    command: |
       ninja -C out/Default electron -j $NUMBER_OF_NINJA_PROCESSES
       node electron/script/check-symlinks.js
 
@@ -1653,8 +1647,7 @@ commands:
                 steps:
                   - *step-restore-out-cache
             - *step-gn-gen-default
-            - *step-electron-build-part-1
-            - *step-electron-build-part-2
+            - *step-electron-build
             - *step-ninja-summary
             - *step-ninja-report
             - *step-maybe-electron-dist-strip
@@ -1783,10 +1776,7 @@ commands:
       - *step-delete-tar
 
       # Electron app
-      - *step-electron-build-part-1
-      - *step-restore-out-cache-publish-stage-2
-      - *step-restore-from-tar
-      - *step-electron-build-part-2
+      - *step-electron-build
       - *step-show-goma-stats
       - *step-maybe-generate-breakpad-symbols
       - *step-maybe-electron-dist-strip
