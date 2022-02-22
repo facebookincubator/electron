@@ -560,7 +560,6 @@ step-electron-build-prep-stage-2: &step-electron-build-prep-stage-2
       if [ "$TRIGGER_ARM_TEST" == "true" ]; then
         rm -f src/out/Default/libffmpeg.so
       fi
-      cd src
 
       # Enable if things get really bad
       # if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
