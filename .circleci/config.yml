@@ -555,7 +555,6 @@ step-electron-build-prep-stage-3: &step-electron-build-prep-stage-3
       if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
         ninja -C out/Default clang_x64_v8_arm64/obj/skia/libskia.a -j $NUMBER_OF_NINJA_PROCESSES 
         ninja -C out/Default clang_x64_v8_arm64/obj/v8/v8.stamp -j $NUMBER_OF_NINJA_PROCESSES 
-        ninja -C out/Default clang_x64_v8_arm64/obj/third_party/webrtc/pc/pc.stamp -j $NUMBER_OF_NINJA_PROCESSES 
         ninja -C out/Default clang_x64_v8_arm64/obj/media/mojo/mojom/mojom.stamp -j $NUMBER_OF_NINJA_PROCESSES 
         ninja -C out/Default clang_x64_v8_arm64/obj/third_party/blink/renderer/platform/libblink_platform.a -j $NUMBER_OF_NINJA_PROCESSES 
       fi
@@ -1846,7 +1845,7 @@ commands:
       - *step-tar-out-default
       - *step-save-out-cache-publish-stage-3
       - *step-delete-tar
-      
+
       - *step-restore-out-cache-publish-stage-4
       - *step-restore-from-tar
       - *step-gn-gen-default
