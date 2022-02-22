@@ -538,6 +538,20 @@ step-electron-build-prep-stage-1: &step-electron-build-prep-stage-1
     command: |
       cd src
 
+step-electron-build-prep-stage-2: &step-electron-build-prep-stage-2
+  run:
+    name: Electron build prep (stage 2)
+    no_output_timeout: 30m
+    command: |
+      cd src
+
+step-electron-build-prep-stage-3: &step-electron-build-prep-stage-3
+  run:
+    name: Electron build prep (stage 3)
+    no_output_timeout: 30m
+    command: |
+      cd src
+
       if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
         ninja -C out/Default clang_x64_v8_arm64/obj/skia/libskia.a -j $NUMBER_OF_NINJA_PROCESSES 
         ninja -C out/Default clang_x64_v8_arm64/obj/v8/v8.stamp -j $NUMBER_OF_NINJA_PROCESSES 
@@ -554,9 +568,9 @@ step-electron-build-prep-stage-1: &step-electron-build-prep-stage-1
       ninja -C out/Default media/mojo/mojom -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default third_party/blink/renderer/platform -j $NUMBER_OF_NINJA_PROCESSES 
 
-step-electron-build-prep-stage-2: &step-electron-build-prep-stage-2
+step-electron-build-prep-stage-2: &step-electron-build-prep-stage-4
   run:
-    name: Electron build prep (stage 2)
+    name: Electron build prep (stage 4)
     no_output_timeout: 30m
     command: |
       cd src
@@ -1093,6 +1107,22 @@ step-restore-out-cache-publish-stage-2: &step-restore-out-cache-publish-stage-2
       - v9-out-cache-publish-stage-2-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
     name: Restoring out cache for publish (stage 2)
 
+step-restore-out-cache-publish-stage-3: &step-restore-out-cache-publish-stage-3
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-stage-3-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Restoring out cache for publish (stage 3)
+
+step-restore-out-cache-publish-stage-4: &step-restore-out-cache-publish-stage-4
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-stage-4-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Restoring out cache for publish (stage 4)
+
 step-set-git-cache-path: &step-set-git-cache-path
   run:
     name: Set GIT_CACHE_PATH to make gclient to use the cache
@@ -1131,6 +1161,20 @@ step-save-out-cache-publish-stage-2: &step-save-out-cache-publish-stage-2
       - ./out.tar.gz
     key: v9-out-cache-publish-stage-2-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
     name: Persisting out cache for publish (stage 2)
+
+step-save-out-cache-publish-stage-3: &step-save-out-cache-publish-stage-3
+  save_cache:
+    paths:
+      - ./out.tar.gz
+    key: v9-out-cache-publish-stage-3-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Persisting out cache for publish (stage 3)
+
+step-save-out-cache-publish-stage-4: &step-save-out-cache-publish-stage-4
+  save_cache:
+    paths:
+      - ./out.tar.gz
+    key: v9-out-cache-publish-stage-4-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Persisting out cache for publish (stage 4)
 
 step-run-electron-only-hooks: &step-run-electron-only-hooks
   run:
@@ -1787,11 +1831,28 @@ commands:
       - *step-tar-out-default
       - *step-save-out-cache-publish-stage-1
       - *step-delete-tar
+
       - *step-restore-out-cache-publish-stage-2
       - *step-restore-from-tar
       - *step-electron-build-prep-stage-2
       - *step-tar-out-default
       - *step-save-out-cache-publish-stage-2
+      - *step-delete-tar
+
+      - *step-restore-out-cache-publish-stage-3
+      - *step-restore-from-tar
+      - *step-gn-gen-default
+      - *step-electron-build-prep-stage-3
+      - *step-tar-out-default
+      - *step-save-out-cache-publish-stage-3
+      - *step-delete-tar
+      
+      - *step-restore-out-cache-publish-stage-4
+      - *step-restore-from-tar
+      - *step-gn-gen-default
+      - *step-electron-build-prep-stage-4
+      - *step-tar-out-default
+      - *step-save-out-cache-publish-stage-4
       - *step-delete-tar
 
       # Electron app
