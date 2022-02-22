@@ -538,6 +538,7 @@ step-electron-build-prep-stage-1: &step-electron-build-prep-stage-1
     command: |
       cd src
       ninja -C out/Default v8 -j $NUMBER_OF_NINJA_PROCESSES 
+      ninja -C out/Default tools/v8_context_snapshot -j $NUMBER_OF_NINJA_PROCESSES
       ninja -C out/Default skia -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default third_party/webrtc/pc -j $NUMBER_OF_NINJA_PROCESSES 
       ninja -C out/Default third_party/ffmpeg -j $NUMBER_OF_NINJA_PROCESSES 
