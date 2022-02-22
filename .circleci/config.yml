@@ -549,37 +549,34 @@ step-electron-build-prep-stage-2: &step-electron-build-prep-stage-2
     no_output_timeout: 30m
     command: |
       cd src
-      if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
-        ninja -C out/Default electron:electron_mksnapshot_zip -j $NUMBER_OF_NINJA_PROCESSES
-        ninja -C out/Default tools/v8_context_snapshot -j $NUMBER_OF_NINJA_PROCESSES
-      fi
+      if [[ ! -f "out/Default/mksnapshot.zip" ]]; then 
+        # On arm platforms we generate a cross-arch ffmpeg that ninja does not seem
+        # to realize is not correct / should be rebuilt.  We delete it here so it is
+        # rebuilt
+        if [ "$TRIGGER_ARM_TEST" == "true" ]; then
+          rm -f src/out/Default/libffmpeg.so
+        fi
 
-      # On arm platforms we generate a cross-arch ffmpeg that ninja does not seem
-      # to realize is not correct / should be rebuilt.  We delete it here so it is
-      # rebuilt
-      if [ "$TRIGGER_ARM_TEST" == "true" ]; then
-        rm -f src/out/Default/libffmpeg.so
-      fi
+        # Enable if things get really bad
+        # if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
+        #   diskutil erasevolume HFS+ "xcode_disk" `hdiutil attach -nomount ram://12582912`
+        #   mv /Applications/Xcode-12.beta.5.app /Volumes/xcode_disk/
+        #   ln -s /Volumes/xcode_disk/Xcode-12.beta.5.app /Applications/Xcode-12.beta.5.app
+        # fi
 
-      # Enable if things get really bad
-      # if  [ "$TARGET_ARCH" == "arm64" ] &&[ "`uname`" == "Darwin" ]; then
-      #   diskutil erasevolume HFS+ "xcode_disk" `hdiutil attach -nomount ram://12582912`
-      #   mv /Applications/Xcode-12.beta.5.app /Volumes/xcode_disk/
-      #   ln -s /Volumes/xcode_disk/Xcode-12.beta.5.app /Applications/Xcode-12.beta.5.app
-      # fi
+        # Lets generate a snapshot and mksnapshot and then delete all the x-compiled generated files to save space
+        if [ "$USE_PREBUILT_V8_CONTEXT_SNAPSHOT" == "1" ]; then
+          ninja -C out/Default electron:electron_mksnapshot_zip -j $NUMBER_OF_NINJA_PROCESSES
+          ninja -C out/Default tools/v8_context_snapshot -j $NUMBER_OF_NINJA_PROCESSES
+          gn desc out/Default v8:run_mksnapshot_default args > out/Default/mksnapshot_args
+          (cd out/Default; zip mksnapshot.zip mksnapshot_args clang_x64_v8_arm64/gen/v8/embedded.S)
+          rm -rf out/Default/clang_x64_v8_arm64/gen
+          rm -rf out/Default/clang_x64_v8_arm64/obj
+          rm -rf out/Default/clang_x64/obj
 
-      # Lets generate a snapshot and mksnapshot and then delete all the x-compiled generated files to save space
-      if [ "$USE_PREBUILT_V8_CONTEXT_SNAPSHOT" == "1" ]; then
-        ninja -C out/Default electron:electron_mksnapshot_zip -j $NUMBER_OF_NINJA_PROCESSES
-        ninja -C out/Default tools/v8_context_snapshot -j $NUMBER_OF_NINJA_PROCESSES
-        gn desc out/Default v8:run_mksnapshot_default args > out/Default/mksnapshot_args
-        (cd out/Default; zip mksnapshot.zip mksnapshot_args clang_x64_v8_arm64/gen/v8/embedded.S)
-        rm -rf out/Default/clang_x64_v8_arm64/gen
-        rm -rf out/Default/clang_x64_v8_arm64/obj
-        rm -rf out/Default/clang_x64/obj
-
-        # Regenerate because we just deleted some ninja files 
-        gn gen out/Default --args="import(\"$GN_CONFIG\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+          # Regenerate because we just deleted some ninja files 
+          gn gen out/Default --args="import(\"$GN_CONFIG\") $GN_EXTRA_ARGS $GN_BUILDFLAG_ARGS"
+        fi
       fi
 
 step-electron-build-prep-stage-3: &step-electron-build-prep-stage-3
