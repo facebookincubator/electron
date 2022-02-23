@@ -634,7 +634,7 @@ step-delete-tar: &step-delete-tar
 
 step-electron-build: &step-electron-build
   run:
-    name: Electron build. Part 2
+    name: Electron build
     no_output_timeout: 30m
     command: |
       cd src
@@ -1114,6 +1114,14 @@ step-restore-out-cache-publish-stage-4: &step-restore-out-cache-publish-stage-4
       - v9-out-cache-publish-stage-4-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
     name: Restoring out cache for publish (stage 4)
 
+step-restore-out-cache-publish-final: &step-restore-out-cache-publish-final
+  restore_cache:
+    paths:
+      - ./src/out/Default
+    keys:
+      - v9-out-cache-publish-final-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Restoring out cache for publish (final)
+
 step-set-git-cache-path: &step-set-git-cache-path
   run:
     name: Set GIT_CACHE_PATH to make gclient to use the cache
@@ -1166,6 +1174,13 @@ step-save-out-cache-publish-stage-4: &step-save-out-cache-publish-stage-4
       - ./out.tar.gz
     key: v9-out-cache-publish-stage-4-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
     name: Persisting out cache for publish (stage 4)
+
+step-save-out-cache-publish-final: &step-save-out-cache-publish-final
+  save_cache:
+    paths:
+      - ./out.tar.gz
+    key: v9-out-cache-publish-final-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
+    name: Persisting out cache for publish (final)
 
 step-run-electron-only-hooks: &step-run-electron-only-hooks
   run:
@@ -1831,7 +1846,6 @@ commands:
 
       - *step-restore-out-cache-publish-stage-3
       - *step-restore-from-tar
-      - *step-gn-gen-default
       - *step-electron-build-prep-stage-3
       - *step-tar-out-default
       - *step-save-out-cache-publish-stage-3
@@ -1839,15 +1853,21 @@ commands:
 
       - *step-restore-out-cache-publish-stage-4
       - *step-restore-from-tar
-      - *step-gn-gen-default
       - *step-electron-build-prep-stage-4
       - *step-tar-out-default
       - *step-save-out-cache-publish-stage-4
       - *step-delete-tar
 
       # Electron app
+      - *step-restore-out-cache-publish-final
+      - *step-restore-from-tar
       - *step-electron-build
+      - *step-tar-out-default
+      - *step-save-out-cache-publish-final
+      - *step-delete-tar
+
       - *step-show-goma-stats
+
       - *step-maybe-generate-breakpad-symbols
       - *step-maybe-electron-dist-strip
       - *step-electron-dist-build
