@@ -1855,8 +1855,8 @@ commands:
       - *step-symbols-store
 
       # mksnapshot
-      - *step-mksnapshot-build
-      - *step-mksnapshot-store
+      # - *step-mksnapshot-build
+      # - *step-mksnapshot-store
 
       # chromedriver
       - *step-electron-maybe-chromedriver-gn-gen
