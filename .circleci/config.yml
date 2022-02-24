@@ -1113,14 +1113,6 @@ step-restore-out-cache-publish-stage-4: &step-restore-out-cache-publish-stage-4
       - v9-out-cache-publish-stage-4-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
     name: Restoring out cache for publish (stage 4)
 
-step-restore-out-cache-publish-final: &step-restore-out-cache-publish-final
-  restore_cache:
-    paths:
-      - ./src/out/Default
-    keys:
-      - v9-out-cache-publish-final-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
-    name: Restoring out cache for publish (final)
-
 step-set-git-cache-path: &step-set-git-cache-path
   run:
     name: Set GIT_CACHE_PATH to make gclient to use the cache
@@ -1173,13 +1165,6 @@ step-save-out-cache-publish-stage-4: &step-save-out-cache-publish-stage-4
       - ./out.tar.gz
     key: v9-out-cache-publish-stage-4-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
     name: Persisting out cache for publish (stage 4)
-
-step-save-out-cache-publish-final: &step-save-out-cache-publish-final
-  save_cache:
-    paths:
-      - ./out.tar.gz
-    key: v9-out-cache-publish-final-{{ arch }}-target-{{ checksum "arch.txt" }}-{{ .Revision }}
-    name: Persisting out cache for publish (final)
 
 step-run-electron-only-hooks: &step-run-electron-only-hooks
   run:
@@ -1858,12 +1843,7 @@ commands:
       - *step-delete-tar
 
       # Electron app
-      - *step-restore-out-cache-publish-final
-      - *step-restore-from-tar
       - *step-electron-build
-      - *step-tar-out-default
-      - *step-save-out-cache-publish-final
-      - *step-delete-tar
 
       - *step-show-goma-stats
 
