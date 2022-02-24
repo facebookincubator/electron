@@ -1859,9 +1859,9 @@ commands:
       # - *step-mksnapshot-store
 
       # chromedriver
-      - *step-electron-maybe-chromedriver-gn-gen
-      - *step-electron-chromedriver-build
-      - *step-electron-chromedriver-store
+      # - *step-electron-maybe-chromedriver-gn-gen
+      # - *step-electron-chromedriver-build
+      # - *step-electron-chromedriver-store
 
       # Node.js headers
       - *step-nodejs-headers-build
